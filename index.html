@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Тест — Деньги и Банки</title>
+<title>Тест</title>
 
 <style>
 *{box-sizing:border-box}
@@ -64,7 +64,6 @@ button:hover{background:#1d4ed8}
 
 .answer:hover{background:#4b6384}
 
-.selected{background:#2563eb!important}
 .correct-answer{background:#16a34a!important}
 .wrong-answer{background:#dc2626!important}
 
@@ -109,11 +108,10 @@ button:hover{background:#1d4ed8}
 
 <div class="container">
 
-<h1>Тест — Деньги и Банки</h1>
+<h1>Тест</h1>
 
 <div class="card" id="startBox">
   <h2>Выберите количество вопросов</h2>
-
   <div class="start-buttons">
     <button onclick="startQuiz(25)">25 вопросов</button>
     <button onclick="startQuiz(50)">50 вопросов</button>
@@ -122,7 +120,6 @@ button:hover{background:#1d4ed8}
 </div>
 
 <div class="card hidden" id="quizBox">
-
   <div class="top">
     <div id="timer">30:00</div>
     <div id="progress"></div>
@@ -135,11 +132,9 @@ button:hover{background:#1d4ed8}
     <button onclick="prevQuestion()">Назад</button>
     <button onclick="nextQuestion()">Следующий</button>
   </div>
-
 </div>
 
 <div class="hidden" id="resultBox">
-
   <div class="card">
     <h2>Результат теста</h2>
 
@@ -179,7 +174,6 @@ button:hover{background:#1d4ed8}
   <div class="card">
     <button style="width:100%" onclick="location.reload()">Пройти заново</button>
   </div>
-
 </div>
 
 </div>
@@ -203,18 +197,14 @@ fetch("questions.txt")
     let parts = block
       .split(/={3,}/)
       .map(x => x.trim())
-      .filter(x => x && x !== "=");
+      .filter(x => x.length > 0);
 
     if(parts.length >= 5){
-      let answers = [
-        parts[1],
-        parts[2],
-        parts[3],
-        parts[4]
-      ];
+      let q = parts[0].replace(/^\d+\.\s*/, "");
+      let answers = [parts[1], parts[2], parts[3], parts[4]];
 
       allQuestions.push({
-        question: parts[0],
+        question: q,
         correct: parts[1],
         answers: shuffleArray(answers)
       });
@@ -274,43 +264,35 @@ function showQuestion(){
 
   document.getElementById("question").innerText = q.question;
 
-  let html = "";
+  let answersBox = document.getElementById("answers");
+  answersBox.innerHTML = "";
 
-  q.answers.forEach(answer => {
-    let cls = "answer";
+  q.answers.forEach((answer,index) => {
+    let btn = document.createElement("button");
+    btn.className = "answer";
+    btn.innerText = answer;
 
     if(answered[current]){
+      btn.disabled = true;
+
       if(answer === q.correct){
-        cls += " correct-answer";
+        btn.classList.add("correct-answer");
       }
 
       if(userAnswers[current] === answer && answer !== q.correct){
-        cls += " wrong-answer";
-      }
-    }else{
-      if(userAnswers[current] === answer){
-        cls += " selected";
+        btn.classList.add("wrong-answer");
       }
     }
 
-    html += `
-      <button class="${cls}" onclick="chooseAnswer(\`${safe(answer)}\`)" ${answered[current] ? "disabled" : ""}>
-        ${answer}
-      </button>
-    `;
+    btn.onclick = () => chooseAnswer(index);
+    answersBox.appendChild(btn);
   });
-
-  document.getElementById("answers").innerHTML = html;
 }
 
-function safe(text){
-  return text
-    .replace(/\\/g,"\\\\")
-    .replace(/`/g,"\\`");
-}
-
-function chooseAnswer(answer){
+function chooseAnswer(index){
   if(answered[current]) return;
+
+  let answer = questions[current].answers[index];
 
   userAnswers[current] = answer;
   answered[current] = true;
